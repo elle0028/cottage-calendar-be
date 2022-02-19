@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Date
+from .models import Note
+
+admin.site.register(Date)
+admin.site.register(Note)
