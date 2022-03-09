@@ -19,7 +19,7 @@ class Date(models.Model):
 
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.ForeignKey(Date, on_delete=models.CASCADE)
+    date = models.ForeignKey(Date, related_name='notes', on_delete=models.CASCADE)
     message = models.CharField(max_length=256)
 
     def __str__(self):
