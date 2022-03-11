@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 # User is just AbstractUser
 
 class Date(models.Model):
-    date = models.CharField(unique=True,
+    date = models.CharField(primary_key=True,
+                            unique=True,
                             max_length=10,
                             validators=[
                                 # Needs validation before insert to remove invalid dates
@@ -14,8 +15,6 @@ class Date(models.Model):
                                 )
                             ])
     users = models.ManyToManyField(User)
-    def __str__(self):
-        return str(self.date) + '[' + ','.join(str(user) for user in self.users.all()) + ']'
 
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

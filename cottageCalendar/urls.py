@@ -20,7 +20,7 @@ from scheduler import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
-router.register(r'notes', views.NoteViewSet)
+# router.register(r'notes', views.NoteViewSet)
 # router.register(r'dates', views.DateViewSet)
 
 urlpatterns = [
@@ -28,5 +28,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('admin/', admin.site.urls),
     path('date/<str:id>', views.getDateById),
-    path('date', views.saveDate)
+    path('date', views.createDate),
+    path('notes', views.createNote),
+    path('note/<int:id>', views.getNote),
 ]

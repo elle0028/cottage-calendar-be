@@ -76,6 +76,36 @@ TEMPLATES = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    "formatters": {
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            'fmt': '%(levelname)s %(asctime)s %(message)s',
+        }
+    },
+    'handlers': {
+        'stream': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'json'
+        },
+    },
+    'loggers': {
+        # 'django': {
+        #     'handlers': ['console'],
+        #     'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        #     'propagate': False,
+        # },
+        "scheduler": {
+            "handlers": ["stream"],
+            "level": "DEBUG",
+            'propagate': True
+        }
+    },
+}
+
 WSGI_APPLICATION = 'cottageCalendar.wsgi.application'
 
 
@@ -139,3 +169,5 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 31
 }
+
+# DEFAULT_EXCEPTION_REPORTER = 'django.views.debug.ExceptionReporter'
