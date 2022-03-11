@@ -1,14 +1,14 @@
-from typing import OrderedDict
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from rest_framework.generics import GenericAPIView
-from rest_framework.mixins import UpdateModelMixin
 from scheduler.models import Date, Note
 import logging
 
 logger = logging.getLogger(__name__)
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email']

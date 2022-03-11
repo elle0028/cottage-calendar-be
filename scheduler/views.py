@@ -1,12 +1,9 @@
-from functools import partial
-from os import stat
 from django.shortcuts import HttpResponse
 from django.contrib.auth.models import User
-from html5lib import serialize
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser 
+from rest_framework.permissions import AllowAny 
 from scheduler.models import Date, Note
 from scheduler.serializers import DateSerializer, NoteSerializer, UserSerializer
 import logging
@@ -97,3 +94,14 @@ def getNote(request, id):
     elif request.method == 'DELETE':
         note.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return User.objects.all()
+        return User.objects.exclude(username='admin')
