@@ -29,6 +29,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('admin/', admin.site.urls),
     path('date/<str:id>', views.getDateById),
+    path('month/<str:year>/<str:month>', views.getMonthById),
     path('date', views.createDate),
     path('notes', views.createNote),
     path('note/<int:id>', views.getNote),

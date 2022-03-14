@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny 
+from rest_framework.permissions import AllowAny
+from scheduler import serializers 
 from scheduler.models import Date, Note
 from scheduler.serializers import DateSerializer, NoteSerializer, UserSerializer
 import logging
@@ -50,6 +51,14 @@ def getDateById(request, id):
     elif request.method == 'DELETE':
         date.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+def getMonthById(request, year, month):
+    searchId = year + '-' + month
+    dates = Date.objects.filter(date__startswith=searchId)
+    serializer = serializers.DateMonthSerializer(dates, many=True)
+    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['POST'])
 def createDate(request):

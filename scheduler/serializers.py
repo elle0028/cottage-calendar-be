@@ -59,3 +59,11 @@ class DateSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class DateMonthSerializer(serializers.ModelSerializer):
+    users = UserSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Date
+        fields = ['date', 'users']
+        lookup_field = 'date'
