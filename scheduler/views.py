@@ -4,7 +4,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from scheduler import serializers 
+from scheduler import serializers
 from scheduler.models import Date, Note
 from scheduler.serializers import DateSerializer, NoteSerializer, UserSerializer
 import logging
@@ -13,14 +13,6 @@ logger = logging.getLogger(__name__)
 
 def index(request):
     return HttpResponse('Hello World')
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    Api Endpoint for users
-    """
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
@@ -36,7 +28,7 @@ def getDateById(request, id):
         logger.debug('GOT', extra={'date': date})
     except Date.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == 'GET':
         serializer = DateSerializer(date, context={'request': request})
         return Response(serializer.data)
@@ -57,7 +49,7 @@ def getMonthById(request, year, month):
     searchId = year + '-' + month
     dates = Date.objects.filter(date__startswith=searchId)
     serializer = serializers.DateMonthSerializer(dates, many=True)
-    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -88,7 +80,7 @@ def getNote(request, id):
         logger.debug('GOT', extra={'note': note})
     except Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == 'GET':
         serializer = NoteSerializer(note, context={'request': request})
         return Response(serializer.data)
@@ -104,12 +96,19 @@ def getNote(request, id):
         note.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['GET'])
+def getNonAdminUsers(request):
+    users = User.objects.exclude(username='admin')
+    serializer = serializers.UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
 
     def get_queryset(self):
+        logger.debug('GET users', extra={'self': self})
         user = self.request.user
         if user.is_superuser:
             return User.objects.all()

@@ -20,7 +20,6 @@ from rest_framework import routers
 from scheduler import views
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
 # router.register(r'notes', views.NoteViewSet)
 # router.register(r'dates', views.DateViewSet)
 
@@ -33,6 +32,7 @@ urlpatterns = [
     path('date', views.createDate),
     path('notes', views.createNote),
     path('note/<int:id>', views.getNote),
+    path('users/all', views.getNonAdminUsers),
     # url(r'^.*', TemplateView.as_view(template_name="home.html"), name="home")
-    re_path(r'^$', TemplateView.as_view(template_name="home.html"))
+    re_path(r'(.)*$', TemplateView.as_view(template_name="home.html"))
 ]
