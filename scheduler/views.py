@@ -1,13 +1,18 @@
 from django.shortcuts import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from scheduler import serializers
+from rest_framework.authentication import authenticate
+
 from scheduler.models import Date, Note
 from scheduler.serializers import (
     DateSerializer,
@@ -112,6 +117,7 @@ def getNote(request, id):
 
 @api_view(["GET"])
 def getNonAdminUsers(request):
+    logger.debug("Users", extra={"request": request.headers})
     users = User.objects.exclude(username="admin")
     serializer = serializers.UserSerializer(users, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -130,36 +136,81 @@ class UserViewSet(viewsets.ModelViewSet):
         return User.objects.exclude(username="admin")
 
 
-class Login(APIView):
-    permission_classes = ()
-    authentication_classes = ()
-
+class ObtainAuthToken(APIView):
     def post(self, request):
-        logger.debug("Login", extra={"request": request.data})
-        logger.debug("Login", extra={"request": request.data})
+        user = authenticate(
+            username=request.data["username"], password=request.data["password"]
+        )
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key, "user": UserSerializer(user).data})
+        return Response(
+            "Invalid username or password", status=status.HTTP_400_BAD_REQUEST
+        )
 
-        username = request.data.get("username", None)
-        password = request.data.get("password", None)
-        if username and password:
-            user_obj = User.objects.filter(username=username)
-            logger.debug("Users", extra={"user": user_obj})
-            if user_obj.exists() and user_obj.first().check_password(password):
-                user = UserLoginSerializer(user_obj)
-                data_list = {}
-                data_list.update(user.data)
 
-                logger.debug("Here")
+# class Login(APIView):
+#     permission_classes = ()
+#     authentication_classes = ()
 
-                return Response(
-                    {"message": "Login Successfully", "data": data_list, "code": 200}
-                )
-            else:
-                message = "Unable to login with given credentials"
-                return Response({"message": message, "code": 500, "data": {}})
-        else:
-            message = "Invalid login details."
-            return Response({"message": message, "code": 500, "data": {}})
+#     def post(self, request):
+#         logger.debug("Login", extra={"request": request.data})
+#         logger.debug("Login", extra={"request": request.data})
 
-    # def get_queryset(self):
-    #     logger.debug("GET users", extra={"self": self})
-    #     return User.objects.filter(username=username)
+#         username = request.data.get("username", None)
+#         password = request.data.get("password", None)
+#         if username and password:
+#             user_obj = User.objects.filter(username=username)
+#             logger.debug("Users", extra={"user": user_obj})
+#             if user_obj.exists() and user_obj.first().check_password(password):
+#                 user = UserLoginSerializer(user_obj)
+#                 data_list = {}
+#                 data_list.update(user.data)
+
+#                 logger.debug("Here")
+
+#                 return Response(
+#                     {"message": "Login Successfully", "data": data_list, "code": 200}
+#                 )
+#             else:
+#                 message = "Unable to login with given credentials"
+#                 return Response({"message": message, "code": 500, "data": {}})
+#         else:
+#             message = "Invalid login details."
+#             return Response({"message": message, "code": 500, "data": {}})
+
+#     # def get_queryset(self):
+#     #     logger.debug("GET users", extra={"self": self})
+#     #     return User.objects.filter(username=username)
+
+# @api_view(["POST"])
+# def login_user(request):
+
+#     username = request.data.get("username", None)
+#     password = request.data.get("password", None)
+#     try:
+#         user = User.objects.get(username=username)
+#     except BaseException as e:
+#         raise ValidationError({"400": f'{str(e)}'})
+
+#     token = Token.objects.get_or_create(user=user)[0].key
+#     print(token)
+#     if not user.check_password(password):
+#         raise ValidationError({"message": "Incorrect Login credentials"})
+
+#     if user:
+#         if user.is_active:
+#             print(request.user)
+#             login(request, user)
+#             data["message"] = "user logged in"
+#             data["email_address"] = user.email
+
+#             Res = {"data": data, "token": token}
+
+#             return Response(Res)
+
+#         else:
+#             raise ValidationError({"400": f'Account not active'})
+
+#     else:
+#         raise ValidationError({"400": f'Account doesnt exist'})

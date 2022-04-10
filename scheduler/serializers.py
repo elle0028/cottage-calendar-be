@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
+from rest_framework.authentication import authenticate
 from scheduler.models import Date, Note
 import logging
 
@@ -21,6 +22,16 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
+
+    def validate(self, data):
+        username = data.get("username", None)
+        password = data.get("password", None)
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user:
+                data["user"] = user
+            data["user"] = user
+        return data
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):

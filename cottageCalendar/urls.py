@@ -18,11 +18,13 @@ from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 from rest_framework import routers
 from scheduler import views
+from rest_framework.authtoken import views as token_views
 
 router = routers.DefaultRouter()
 # router.register(r'notes', views.NoteViewSet)
 # router.register(r'dates', views.DateViewSet)
-router.register(r"login", views.Login, basename="Login")
+# router.register(r"login", views.Login, basename="Login")
+# router.register(r"me", views.ObtainAuthToken, basename="token_login")
 
 urlpatterns = [
     # path('', include(router.urls)),
@@ -34,6 +36,7 @@ urlpatterns = [
     path("notes", views.createNote),
     path("note/<int:id>", views.getNote),
     path("users/all", views.getNonAdminUsers),
+    path("login", token_views.obtain_auth_token),
     # url(r'^.*', TemplateView.as_view(template_name="home.html"), name="home")
-    re_path(r"(.)*$", TemplateView.as_view(template_name="home.html")),
+    # re_path(r"(.)*$", TemplateView.as_view(template_name="home.html")),
 ]
