@@ -1,6 +1,7 @@
 from django.shortcuts import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions, status
+from rest_framework.generics import CreateAPIView
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -19,6 +20,7 @@ from scheduler.serializers import (
     DateSerializer,
     NoteSerializer,
     UserLoginSerializer,
+    UserRegisterSerializer,
     UserSerializer,
 )
 import logging
@@ -139,15 +141,44 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        user = serializer.validated_data["user"]
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-        })
+        return Response(
+            {
+                "token": token.key,
+                "user_id": user.pk,
+            }
+        )
+
+
+class RegisterUser(CreateAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serialized = UserRegisterSerializer(data=request.data)
+
+        if serialized.is_valid():
+            logger.debug("Register", extra={"request": serialized.data})
+            user = User.objects.create_user(
+                username=serialized.data["username"],
+                password=serialized.data["password"],
+            )
+            token, created = Token.objects.get_or_create(user=user)
+            return Response(
+                {
+                    "token": token.key,
+                    "user_id": user.pk,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(serialized._errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # class Login(APIView):
 #     permission_classes = ()
 #     authentication_classes = ()
