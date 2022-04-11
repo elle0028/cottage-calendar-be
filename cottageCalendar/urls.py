@@ -36,7 +36,7 @@ urlpatterns = [
     path("notes", views.createNote),
     path("note/<int:id>", views.getNote),
     path("users/all", views.getNonAdminUsers),
-    path("login", token_views.obtain_auth_token),
+    path("login", views.CustomAuthToken.as_view()),
     # url(r'^.*', TemplateView.as_view(template_name="home.html"), name="home")
     # re_path(r"(.)*$", TemplateView.as_view(template_name="home.html")),
 ]
