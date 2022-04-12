@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions, status
@@ -145,6 +146,7 @@ class CustomAuthToken(ObtainAuthToken):
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
+        logger.debug("Login", extra={"request": serializer.validated_data})
         user = serializer.validated_data["user"]
         token, created = Token.objects.get_or_create(user=user)
         return Response(
@@ -163,84 +165,22 @@ class RegisterUser(CreateAPIView):
 
         if serialized.is_valid():
             logger.debug("Register", extra={"request": serialized.data})
-            user = User.objects.create_user(
-                username=serialized.data["username"],
-                password=serialized.data["password"],
-            )
-            token, created = Token.objects.get_or_create(user=user)
-            return Response(
-                {
-                    "token": token.key,
-                    "user_id": user.pk,
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            try:
+                user = User.objects.create_user(
+                    username=serialized.data["username"],
+                    password=serialized.data["password"],
+                )
+                token, created = Token.objects.get_or_create(user=user)
+                return Response(
+                    {
+                        "token": token.key,
+                        "user_id": user.pk,
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            except IntegrityError:
+                return Response(
+                    "Username already exists", status=status.HTTP_400_BAD_REQUEST
+                )
         else:
             return Response(serialized._errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class Login(APIView):
-#     permission_classes = ()
-#     authentication_classes = ()
-
-#     def post(self, request):
-#         logger.debug("Login", extra={"request": request.data})
-#         logger.debug("Login", extra={"request": request.data})
-
-#         username = request.data.get("username", None)
-#         password = request.data.get("password", None)
-#         if username and password:
-#             user_obj = User.objects.filter(username=username)
-#             logger.debug("Users", extra={"user": user_obj})
-#             if user_obj.exists() and user_obj.first().check_password(password):
-#                 user = UserLoginSerializer(user_obj)
-#                 data_list = {}
-#                 data_list.update(user.data)
-
-#                 logger.debug("Here")
-
-#                 return Response(
-#                     {"message": "Login Successfully", "data": data_list, "code": 200}
-#                 )
-#             else:
-#                 message = "Unable to login with given credentials"
-#                 return Response({"message": message, "code": 500, "data": {}})
-#         else:
-#             message = "Invalid login details."
-#             return Response({"message": message, "code": 500, "data": {}})
-
-#     # def get_queryset(self):
-#     #     logger.debug("GET users", extra={"self": self})
-#     #     return User.objects.filter(username=username)
-
-# @api_view(["POST"])
-# def login_user(request):
-
-#     username = request.data.get("username", None)
-#     password = request.data.get("password", None)
-#     try:
-#         user = User.objects.get(username=username)
-#     except BaseException as e:
-#         raise ValidationError({"400": f'{str(e)}'})
-
-#     token = Token.objects.get_or_create(user=user)[0].key
-#     print(token)
-#     if not user.check_password(password):
-#         raise ValidationError({"message": "Incorrect Login credentials"})
-
-#     if user:
-#         if user.is_active:
-#             print(request.user)
-#             login(request, user)
-#             data["message"] = "user logged in"
-#             data["email_address"] = user.email
-
-#             Res = {"data": data, "token": token}
-
-#             return Response(Res)
-
-#         else:
-#             raise ValidationError({"400": f'Account not active'})
-
-#     else:
-#         raise ValidationError({"400": f'Account doesnt exist'})
