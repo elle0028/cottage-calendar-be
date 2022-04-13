@@ -21,13 +21,8 @@ from scheduler import views
 from rest_framework.authtoken import views as token_views
 
 router = routers.DefaultRouter()
-# router.register(r'notes', views.NoteViewSet)
-# router.register(r'dates', views.DateViewSet)
-# router.register(r"login", views.Login, basename="Login")
-# router.register(r"me", views.ObtainAuthToken, basename="token_login")
 
 urlpatterns = [
-    # path('', include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("admin/", admin.site.urls),
     path("date/<str:id>", views.getDateById),
@@ -39,5 +34,5 @@ urlpatterns = [
     path("login", views.CustomAuthToken.as_view()),
     path("register", views.RegisterUser.as_view()),
     # url(r'^.*', TemplateView.as_view(template_name="home.html"), name="home")
-    # re_path(r"(.)*$", TemplateView.as_view(template_name="home.html")),
+    re_path(r"(.)*$", TemplateView.as_view(template_name="home.html")),
 ]

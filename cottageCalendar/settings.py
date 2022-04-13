@@ -165,6 +165,27 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# ANGULAR_APP_DIR = os.path.join(
+#     BASE_DIR,
+#     "Users",
+#     "Matt",
+#     "Desktop",
+#     "Materials",
+#     "lvl-4",
+#     "cst8333-prog-lang",
+#     "cottage-calendar",
+#     "cottage-calendar-be",
+#     "scheduler",
+#     "static",
+#     "ang",
+# )
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # typical usage from docs
+STATIC_ROOT = os.path.join(BASE_DIR, "static")  # this in both your/my case
+STATIC_URL = "/static/"
+WHITENOISE_ROOT = os.path.join(BASE_DIR, "static")  # same as static_root
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+WHITENOISE_INDEX_FILE = True
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 

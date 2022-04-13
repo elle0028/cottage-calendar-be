@@ -29,16 +29,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def index(request):
-    return HttpResponse("Hello World")
-
-
-class NoteViewSet(viewsets.ModelViewSet):
-    queryset = Note.objects.all()
-    serializer_class = NoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
 @api_view(["GET", "PATCH", "DELETE"])
 def getDateById(request, id):
     logger.debug("GET/PUT getDateById", extra={"request": request.data, "id": id})
